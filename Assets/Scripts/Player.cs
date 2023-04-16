@@ -16,12 +16,13 @@ public class Player : MonoBehaviour
     private Vector2 move;
 
     private bool isGrounded;
-    private bool canDoubleJump;
+    private int doubleJumpSupply;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 8f;
     [SerializeField] private float jumpPower = 10f;
     [SerializeField] private float doubleJumpPower = 5f;
+    [SerializeField] private int doubleJumpCount = 5;
 
     [Header("Animation")]
     [SerializeField] private Vector2 jumpSqueeze;
@@ -57,9 +58,8 @@ public class Player : MonoBehaviour
             jumpParticles.Play();
 
             isGrounded = false;
-            canDoubleJump = true;
         } else {
-            if (Input.GetButtonDown("Jump") && !isGrounded && canDoubleJump)
+            if (Input.GetButtonDown("Jump") && !isGrounded && doubleJumpSupply > 0)
             {
                 rigidbodyComponent.AddForce(
                     new Vector3(
@@ -73,7 +73,7 @@ public class Player : MonoBehaviour
                 StartCoroutine(Squeeze(thrustSqueeze.x, thrustSqueeze.y, thrustSqueezeSpeed));
                 thrustParticles.Play();
 
-                canDoubleJump = false;
+                doubleJumpSupply--;
             }
         }
     }
@@ -111,6 +111,7 @@ public class Player : MonoBehaviour
         if (collision.gameObject.tag == "Ground")
         {
             isGrounded = true;
+            doubleJumpSupply = doubleJumpCount;
         }
     }
 
