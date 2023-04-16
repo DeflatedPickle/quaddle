@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering.Universal;
 
 public class Player : MonoBehaviour
 {
@@ -9,6 +10,8 @@ public class Player : MonoBehaviour
 
     [Header("Component")]
     [SerializeField] private SpriteRenderer sprite;
+    [SerializeField] private Animator animator;
+    [SerializeField] private DecalProjector shadow;
 
     [SerializeField] private ParticleSystem jumpParticles;
     [SerializeField] private ParticleSystem thrustParticles;
@@ -29,6 +32,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float jumpSqueezeSpeed = 0.1f;
     [SerializeField] private Vector2 thrustSqueeze;
     [SerializeField] private float thrustSqueezeSpeed = 0.2f;
+    [SerializeField] private float twistAmount;
+    [SerializeField] private float twistSpeed = 0.1f;
 
     private void Start()
     {
@@ -78,6 +83,24 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void FixedUpdate() 
+    {
+        int layerMask = 1 << 8;
+        layerMask = ~layerMask;
+        
+        RaycastHit hit;
+
+        if (Physics.Raycast(
+            transform.position,
+            transform.TransformDirection(Vector3.down),
+            out hit, Mathf.Infinity, layerMask)
+            )
+        {
+            var lerp = Mathf.Lerp(1f, 0.2f, hit.distance / 10);
+            shadow.fadeFactor = lerp;
+        }
+    }
+
     IEnumerator Squeeze(float x, float y, float seconds)
     {
         var originalSize = Vector3.one;
@@ -118,5 +141,27 @@ public class Player : MonoBehaviour
     private void OnMove(InputValue value)
     {
         move = value.Get<Vector2>();
+
+        if (move.x > 0)
+        {
+            animator.SetInteger("Horizontal Tilt", 1);
+        }
+        else if (move.x < 0)
+        {
+            animator.SetInteger("Horizontal Tilt", -1);
+        } else {
+            animator.SetInteger("Horizontal Tilt", 0);
+        }
+
+        if (move.y > 0)
+        {
+            animator.SetInteger("Vertical Tilt", 2);
+        }
+        else if (move.y < 0)
+        {
+            animator.SetInteger("Vertical Tilt", -2);
+        } else {
+            animator.SetInteger("Vertical Tilt", 0);
+        }
     }
 }
