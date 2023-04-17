@@ -15,8 +15,15 @@ public class Player : MonoBehaviour
 
     [SerializeField] private ParticleSystem jumpParticles;
     [SerializeField] private ParticleSystem thrustParticles;
+    [SerializeField] private ParticleSystem floatParticles;
+
+    [Header("Sprite")]
+    [SerializeField] private Sprite normalSprite;
+    [SerializeField] private Sprite suckSprite;
 
     private Vector2 move;
+    private bool floaf;
+    private bool suck;
 
     private bool isGrounded;
     private int doubleJumpSupply;
@@ -26,6 +33,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float jumpPower = 10f;
     [SerializeField] private float doubleJumpPower = 5f;
     [SerializeField] private int doubleJumpCount = 5;
+    [SerializeField] private int suckCircle = 6;
 
     [Header("Animation")]
     [SerializeField] private Vector2 jumpSqueeze;
@@ -35,7 +43,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float twistAmount;
     [SerializeField] private float twistSpeed = 0.1f;
 
-    private void Start()
+    private void Awake()
     {
         rigidbodyComponent = GetComponent<Rigidbody>();
     }
@@ -80,6 +88,38 @@ public class Player : MonoBehaviour
 
                 doubleJumpSupply--;
             }
+
+            if (floaf && !isGrounded && doubleJumpSupply <= 0)
+            {
+                rigidbodyComponent.drag = 6;
+                floatParticles.Play();
+            }
+            else
+            {
+                rigidbodyComponent.drag = 0;
+            }
+        }
+
+        if (suck)
+        {
+            sprite.sprite = suckSprite;
+
+            Collider[] hitColliders = Physics.OverlapSphere(transform.position, suckCircle, 1 << 6);
+
+            foreach (var obj in hitColliders)
+            {
+                if (obj.GetComponent<Rigidbody>() != null)
+                {
+                    obj.GetComponent<Rigidbody>().AddForce(
+                        (transform.position - obj.transform.position).normalized,
+                        ForceMode.Impulse
+                    );
+                }
+            }
+        }
+        else
+        {
+            sprite.sprite = normalSprite;
         }
     }
 
@@ -129,6 +169,40 @@ public class Player : MonoBehaviour
         }
     }
 
+    IEnumerator StartSqueeze(float x, float y, float seconds)
+    {
+        var originalSize = Vector3.one;
+        var newSize = new Vector3(x, y, originalSize.z);
+
+        var t = 0f;
+
+        while (t <= 1)
+        {
+            t += Time.deltaTime / seconds;
+
+            sprite.transform.localScale = Vector3.Lerp(originalSize, newSize, t);
+            
+            yield return null;
+        }
+    }
+
+    IEnumerator StopSqueeze(float x, float y, float seconds)
+    {
+        var originalSize = Vector3.one;
+        var newSize = new Vector3(x, y, originalSize.z);
+
+        var t = 0f;
+
+        while (t <= 1)
+        {
+            t += Time.deltaTime / seconds;
+
+            sprite.transform.localScale = Vector3.Lerp(newSize, originalSize, t);
+
+            yield return null;
+        }
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.tag == "Ground")
@@ -163,5 +237,36 @@ public class Player : MonoBehaviour
         } else {
             animator.SetInteger("Vertical Tilt", 0);
         }
+    }
+
+    private void OnFloat(InputValue value)
+    {
+        floaf = value.isPressed;
+    }
+
+    private void OnSuck(InputValue value)
+    {
+        suck = value.isPressed;
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        int layerMask = 1 << 8;
+        layerMask = ~layerMask;
+        
+        RaycastHit hit;
+
+        if (Physics.Raycast(
+            transform.position,
+            transform.TransformDirection(Vector3.down),
+            out hit, Mathf.Infinity, layerMask)
+            )
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawRay(transform.position, transform.TransformDirection(Vector3.down) * hit.distance);
+        }
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, suckCircle);
     }
 }

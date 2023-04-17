@@ -53,6 +53,24 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Float"",
+                    ""type"": ""Button"",
+                    ""id"": ""15db3775-f134-493e-a15c-a315da5c1939"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Press(behavior=2)"",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Suck"",
+                    ""type"": ""Button"",
+                    ""id"": ""8a3e9697-96d7-4131-9e6a-be71d1ce0fc4"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Press(behavior=2)"",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -240,6 +258,50 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""Gamepad"",
                     ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1f6fec87-80b9-46b2-8b92-69f4c1f5ce27"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Float"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""843e4456-f8c2-45aa-811d-b60d4508e377"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Float"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""974ee2ed-e776-4b99-a51f-77a53e47e387"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Suck"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""40de5ed8-4d88-4cdd-bb55-8275aec8db6a"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Suck"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -830,6 +892,8 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         m_Player_Look = m_Player.FindAction("Look", throwIfNotFound: true);
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
+        m_Player_Float = m_Player.FindAction("Float", throwIfNotFound: true);
+        m_Player_Suck = m_Player.FindAction("Suck", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -906,6 +970,8 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Move;
     private readonly InputAction m_Player_Look;
     private readonly InputAction m_Player_Jump;
+    private readonly InputAction m_Player_Float;
+    private readonly InputAction m_Player_Suck;
     public struct PlayerActions
     {
         private @PlayerInput m_Wrapper;
@@ -913,6 +979,8 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         public InputAction @Move => m_Wrapper.m_Player_Move;
         public InputAction @Look => m_Wrapper.m_Player_Look;
         public InputAction @Jump => m_Wrapper.m_Player_Jump;
+        public InputAction @Float => m_Wrapper.m_Player_Float;
+        public InputAction @Suck => m_Wrapper.m_Player_Suck;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -931,6 +999,12 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
+            @Float.started += instance.OnFloat;
+            @Float.performed += instance.OnFloat;
+            @Float.canceled += instance.OnFloat;
+            @Suck.started += instance.OnSuck;
+            @Suck.performed += instance.OnSuck;
+            @Suck.canceled += instance.OnSuck;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -944,6 +1018,12 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
+            @Float.started -= instance.OnFloat;
+            @Float.performed -= instance.OnFloat;
+            @Float.canceled -= instance.OnFloat;
+            @Suck.started -= instance.OnSuck;
+            @Suck.performed -= instance.OnSuck;
+            @Suck.canceled -= instance.OnSuck;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1129,6 +1209,8 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         void OnMove(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
+        void OnFloat(InputAction.CallbackContext context);
+        void OnSuck(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {
