@@ -22,6 +22,7 @@ public class Player : MonoBehaviour
     [SerializeField] private Sprite suckSprite;
 
     private Vector2 move;
+    private bool jump;
     private bool floaf;
     private bool suck;
 
@@ -56,7 +57,7 @@ public class Player : MonoBehaviour
             move.y * moveSpeed
         );
 
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (jump && isGrounded)
         {
             rigidbodyComponent.AddForce(
                 new Vector3(
@@ -71,8 +72,9 @@ public class Player : MonoBehaviour
             jumpParticles.Play();
 
             isGrounded = false;
+            jump = false;
         } else {
-            if (Input.GetButtonDown("Jump") && !isGrounded && doubleJumpSupply > 0)
+            if (jump && !isGrounded && doubleJumpSupply > 0)
             {
                 rigidbodyComponent.AddForce(
                     new Vector3(
@@ -87,6 +89,7 @@ public class Player : MonoBehaviour
                 thrustParticles.Play();
 
                 doubleJumpSupply--;
+                jump = false;
             }
 
             if (floaf && !isGrounded && doubleJumpSupply <= 0)
@@ -237,6 +240,11 @@ public class Player : MonoBehaviour
         } else {
             animator.SetInteger("Vertical Tilt", 0);
         }
+    }
+
+    private void OnJump(InputValue value)
+    {
+        jump = value.isPressed;
     }
 
     private void OnFloat(InputValue value)
