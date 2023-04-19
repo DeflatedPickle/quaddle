@@ -71,6 +71,15 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": ""Press(behavior=2)"",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Purr"",
+                    ""type"": ""Button"",
+                    ""id"": ""82ca6d25-01dc-442a-83a8-0feac54e40ca"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Press(behavior=2)"",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -302,6 +311,28 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""Gamepad"",
                     ""action"": ""Suck"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3375574b-4b16-481b-8874-2880a84685ac"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Purr"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a979a777-daf1-438b-94b8-3fff55750433"",
+                    ""path"": ""<Gamepad>/leftTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Purr"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -894,6 +925,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_Float = m_Player.FindAction("Float", throwIfNotFound: true);
         m_Player_Suck = m_Player.FindAction("Suck", throwIfNotFound: true);
+        m_Player_Purr = m_Player.FindAction("Purr", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -972,6 +1004,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_Float;
     private readonly InputAction m_Player_Suck;
+    private readonly InputAction m_Player_Purr;
     public struct PlayerActions
     {
         private @PlayerInput m_Wrapper;
@@ -981,6 +1014,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         public InputAction @Jump => m_Wrapper.m_Player_Jump;
         public InputAction @Float => m_Wrapper.m_Player_Float;
         public InputAction @Suck => m_Wrapper.m_Player_Suck;
+        public InputAction @Purr => m_Wrapper.m_Player_Purr;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1005,6 +1039,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Suck.started += instance.OnSuck;
             @Suck.performed += instance.OnSuck;
             @Suck.canceled += instance.OnSuck;
+            @Purr.started += instance.OnPurr;
+            @Purr.performed += instance.OnPurr;
+            @Purr.canceled += instance.OnPurr;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1024,6 +1061,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Suck.started -= instance.OnSuck;
             @Suck.performed -= instance.OnSuck;
             @Suck.canceled -= instance.OnSuck;
+            @Purr.started -= instance.OnPurr;
+            @Purr.performed -= instance.OnPurr;
+            @Purr.canceled -= instance.OnPurr;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1211,6 +1251,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         void OnJump(InputAction.CallbackContext context);
         void OnFloat(InputAction.CallbackContext context);
         void OnSuck(InputAction.CallbackContext context);
+        void OnPurr(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

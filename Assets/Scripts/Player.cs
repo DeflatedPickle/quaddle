@@ -4,9 +4,13 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 
+[RequireComponent(typeof(Rigidbody))]
 public class Player : MonoBehaviour
 {
     private Rigidbody rigidbodyComponent;
+
+    [Header("Triggers")]
+    [SerializeField] private bool inLove;
 
     [Header("Component")]
     [SerializeField] private SpriteRenderer sprite;
@@ -16,10 +20,16 @@ public class Player : MonoBehaviour
     [SerializeField] private ParticleSystem jumpParticles;
     [SerializeField] private ParticleSystem thrustParticles;
     [SerializeField] private ParticleSystem floatParticles;
+    [SerializeField] private ParticleSystem loveParticles;
 
     [Header("Sprite")]
     [SerializeField] private Sprite normalSprite;
     [SerializeField] private Sprite suckSprite;
+    [SerializeField] private Sprite loveSprite;
+
+    [Header("Sounds")]
+    [SerializeField] private AudioSource purr;
+    [SerializeField] private float purrVolume;
 
     private Vector2 move;
     private bool jump;
@@ -124,6 +134,22 @@ public class Player : MonoBehaviour
         {
             sprite.sprite = normalSprite;
         }
+
+        if (inLove)
+        {
+            sprite.sprite = loveSprite;
+            loveParticles.Play();
+            
+            if (!purr.isPlaying)
+            {
+                StartCoroutine(FadeIn(purr, purrVolume, 2f));
+            }
+        }
+        else
+        {
+            sprite.sprite = normalSprite;
+            StartCoroutine(FadeOut(purr, 2f));
+        }
     }
 
     private void FixedUpdate() 
@@ -172,39 +198,23 @@ public class Player : MonoBehaviour
         }
     }
 
-    IEnumerator StartSqueeze(float x, float y, float seconds)
-    {
-        var originalSize = Vector3.one;
-        var newSize = new Vector3(x, y, originalSize.z);
+    public static IEnumerator FadeOut(AudioSource audioSource, float fadeTime) {
+		float startVolume = audioSource.volume;
+		while (audioSource.volume > 0) {
+			audioSource.volume -= startVolume * Time.deltaTime / fadeTime;
+			yield return null;
+		}
+		audioSource.Stop();
+	}
 
-        var t = 0f;
-
-        while (t <= 1)
-        {
-            t += Time.deltaTime / seconds;
-
-            sprite.transform.localScale = Vector3.Lerp(originalSize, newSize, t);
-            
-            yield return null;
-        }
-    }
-
-    IEnumerator StopSqueeze(float x, float y, float seconds)
-    {
-        var originalSize = Vector3.one;
-        var newSize = new Vector3(x, y, originalSize.z);
-
-        var t = 0f;
-
-        while (t <= 1)
-        {
-            t += Time.deltaTime / seconds;
-
-            sprite.transform.localScale = Vector3.Lerp(newSize, originalSize, t);
-
-            yield return null;
-        }
-    }
+	public static IEnumerator FadeIn(AudioSource audioSource, float maxVolume, float fadeTime) {
+			audioSource.Play();
+			audioSource.volume = 0f;
+			while (audioSource.volume < maxVolume) {
+				audioSource.volume += Time.deltaTime / fadeTime;
+				yield return null;
+		}
+	}
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -255,6 +265,11 @@ public class Player : MonoBehaviour
     private void OnSuck(InputValue value)
     {
         suck = value.isPressed;
+    }
+
+    private void OnPurr(InputValue value)
+    {
+        inLove = value.isPressed;
     }
 
     void OnDrawGizmosSelected()
