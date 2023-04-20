@@ -9,7 +9,13 @@ public class Player : MonoBehaviour
 {
     private Rigidbody rigidbodyComponent;
 
-    [Header("Triggers")]
+    [Header("Data")]
+    [SerializeField] private Vector2 movement;
+    [SerializeField] private int doubleJumpSupply;
+    [SerializeField] private bool isJumping;
+    [SerializeField] private bool isGrounded;
+    [SerializeField] private bool isFloating;
+    [SerializeField] private bool isSucking;
     [SerializeField] private bool inLove;
 
     [Header("Component")]
@@ -30,14 +36,6 @@ public class Player : MonoBehaviour
     [Header("Sounds")]
     [SerializeField] private AudioSource purr;
     [SerializeField] private float purrVolume;
-
-    private Vector2 move;
-    private bool jump;
-    private bool floaf;
-    private bool suck;
-
-    private bool isGrounded;
-    private int doubleJumpSupply;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 8f;
@@ -62,12 +60,12 @@ public class Player : MonoBehaviour
     private void Update()
     {
         rigidbodyComponent.velocity = transform.TransformDirection(
-            move.x * moveSpeed,
+            movement.x * moveSpeed,
             rigidbodyComponent.velocity.y,
-            move.y * moveSpeed
+            movement.y * moveSpeed
         );
 
-        if (jump && isGrounded)
+        if (isJumping && isGrounded)
         {
             rigidbodyComponent.AddForce(
                 new Vector3(
@@ -82,9 +80,9 @@ public class Player : MonoBehaviour
             jumpParticles.Play();
 
             isGrounded = false;
-            jump = false;
+            isJumping = false;
         } else {
-            if (jump && !isGrounded && doubleJumpSupply > 0)
+            if (isJumping && !isGrounded && doubleJumpSupply > 0)
             {
                 rigidbodyComponent.AddForce(
                     new Vector3(
@@ -99,10 +97,10 @@ public class Player : MonoBehaviour
                 thrustParticles.Play();
 
                 doubleJumpSupply--;
-                jump = false;
+                isJumping = false;
             }
 
-            if (floaf && !isGrounded && doubleJumpSupply <= 0)
+            if (isFloating && !isGrounded && doubleJumpSupply <= 0)
             {
                 rigidbodyComponent.drag = 6;
                 floatParticles.Play();
@@ -113,7 +111,7 @@ public class Player : MonoBehaviour
             }
         }
 
-        if (suck)
+        if (isSucking)
         {
             sprite.sprite = suckSprite;
 
@@ -130,12 +128,7 @@ public class Player : MonoBehaviour
                 }
             }
         }
-        else
-        {
-            sprite.sprite = normalSprite;
-        }
-
-        if (inLove)
+        else if (inLove)
         {
             sprite.sprite = loveSprite;
             loveParticles.Play();
@@ -145,10 +138,14 @@ public class Player : MonoBehaviour
                 StartCoroutine(FadeIn(purr, purrVolume, 2f));
             }
         }
-        else
+        else if (!inLove)
         {
             sprite.sprite = normalSprite;
             StartCoroutine(FadeOut(purr, 2f));
+        }
+        else
+        {
+            sprite.sprite = normalSprite;
         }
     }
 
@@ -227,24 +224,24 @@ public class Player : MonoBehaviour
 
     private void OnMove(InputValue value)
     {
-        move = value.Get<Vector2>();
+        movement = value.Get<Vector2>();
 
-        if (move.x > 0)
+        if (movement.x > 0)
         {
             animator.SetInteger("Horizontal Tilt", 1);
         }
-        else if (move.x < 0)
+        else if (movement.x < 0)
         {
             animator.SetInteger("Horizontal Tilt", -1);
         } else {
             animator.SetInteger("Horizontal Tilt", 0);
         }
 
-        if (move.y > 0)
+        if (movement.y > 0)
         {
             animator.SetInteger("Vertical Tilt", 2);
         }
-        else if (move.y < 0)
+        else if (movement.y < 0)
         {
             animator.SetInteger("Vertical Tilt", -2);
         } else {
@@ -254,17 +251,17 @@ public class Player : MonoBehaviour
 
     private void OnJump(InputValue value)
     {
-        jump = value.isPressed;
+        isJumping = value.isPressed;
     }
 
     private void OnFloat(InputValue value)
     {
-        floaf = value.isPressed;
+        isFloating = value.isPressed;
     }
 
     private void OnSuck(InputValue value)
     {
-        suck = value.isPressed;
+        isSucking = value.isPressed;
     }
 
     private void OnPurr(InputValue value)
