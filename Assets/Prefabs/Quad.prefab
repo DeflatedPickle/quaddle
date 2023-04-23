@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 3385698006302223569}
   - component: {fileID: 3385698006302223599}
   m_Layer: 0
-  m_Name: Player
+  m_Name: Quad
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -129,7 +129,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1aa9df173572fcff19c0828673da62ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  move: {x: 0, y: 0}
+  movement: {x: 0, y: 0}
+  doubleJumpSupply: 0
+  isJumping: 0
+  isGrounded: 0
+  isFloating: 0
+  isSucking: 0
   inLove: 0
   sprite: {fileID: 3385698006952788500}
   animator: {fileID: 3385698006952788499}
@@ -152,6 +157,8 @@ MonoBehaviour:
   jumpSqueezeSpeed: 0.1
   thrustSqueeze: {x: 0.4, y: 1.8}
   thrustSqueezeSpeed: 0.15
+  twistAmount: 0
+  twistSpeed: 0.1
 --- !u!54 &3385698006302223568
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -179,9 +186,9 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 1
-  m_Height: 1
+  m_Height: 0.9
   m_Direction: 1
-  m_Center: {x: 0, y: 0.65, z: 0}
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!82 &3385698006302223599
 AudioSource:
   m_ObjectHideFlags: 0

@@ -3,13 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
+using Yarn.Unity;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Player : MonoBehaviour
 {
     private Rigidbody rigidbodyComponent;
 
+    [Header("Intro")]
+    [SerializeField] private int stuckCounter = 3;
+    [SerializeField] private bool inTrash = true;
+    [SerializeField] private Collider trashCanCollider;
+    [SerializeField] private Rigidbody trashCanRigidbody;
+
     [Header("Data")]
+    [SerializeField] public bool canMove = false;
     [SerializeField] private Vector2 movement;
     [SerializeField] private int doubleJumpSupply;
     [SerializeField] private bool isJumping;
@@ -36,6 +44,8 @@ public class Player : MonoBehaviour
     [Header("Sounds")]
     [SerializeField] private AudioSource purr;
     [SerializeField] private float purrVolume;
+    [SerializeField] private AudioSource hmmm;
+    [SerializeField] private AudioSource jump;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 8f;
@@ -49,8 +59,6 @@ public class Player : MonoBehaviour
     [SerializeField] private float jumpSqueezeSpeed = 0.1f;
     [SerializeField] private Vector2 thrustSqueeze;
     [SerializeField] private float thrustSqueezeSpeed = 0.2f;
-    [SerializeField] private float twistAmount;
-    [SerializeField] private float twistSpeed = 0.1f;
 
     private void Awake()
     {
@@ -59,6 +67,10 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
+        TrashEscape();
+
+        if (!canMove) return;
+
         rigidbodyComponent.velocity = transform.TransformDirection(
             movement.x * moveSpeed,
             rigidbodyComponent.velocity.y,
@@ -79,6 +91,11 @@ public class Player : MonoBehaviour
             StartCoroutine(Squeeze(jumpSqueeze.x, jumpSqueeze.y, jumpSqueezeSpeed));
             jumpParticles.Play();
 
+            if (!jump.isPlaying)
+            {
+                StartCoroutine(FadeIn(jump, purrVolume, 2f));
+            }
+
             isGrounded = false;
             isJumping = false;
         } else {
@@ -95,6 +112,11 @@ public class Player : MonoBehaviour
 
                 StartCoroutine(Squeeze(thrustSqueeze.x, thrustSqueeze.y, thrustSqueezeSpeed));
                 thrustParticles.Play();
+
+                if (!jump.isPlaying)
+                {
+                    StartCoroutine(FadeIn(jump, purrVolume, 2f));
+                }
 
                 doubleJumpSupply--;
                 isJumping = false;
@@ -167,7 +189,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    IEnumerator Squeeze(float x, float y, float seconds)
+    public IEnumerator Squeeze(float x, float y, float seconds)
     {
         var originalSize = Vector3.one;
         var newSize = new Vector3(x, y, originalSize.z);
@@ -218,6 +240,7 @@ public class Player : MonoBehaviour
         if (collision.gameObject.tag == "Ground")
         {
             isGrounded = true;
+            isFloating = false;
             doubleJumpSupply = doubleJumpCount;
         }
     }
@@ -269,7 +292,7 @@ public class Player : MonoBehaviour
         inLove = value.isPressed;
     }
 
-    void OnDrawGizmosSelected()
+    void OnDrawGizmos()
     {
         int layerMask = 1 << 8;
         layerMask = ~layerMask;
@@ -288,5 +311,53 @@ public class Player : MonoBehaviour
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, suckCircle);
+    }
+
+    private void TrashEscape()
+    {
+        if (inTrash)
+        {
+            sprite.transform.localScale = new Vector3(0.4f, 1f, 1f);
+            canMove = false;
+
+            if (isJumping)
+            {
+                if (stuckCounter > 0)
+                {
+                    StartCoroutine(Squeeze(jumpSqueeze.x, jumpSqueeze.y, jumpSqueezeSpeed));
+                    jumpParticles.Play();
+
+                    // make a cute sound
+                    
+                    isJumping = false;
+                    stuckCounter--;
+                }
+                else
+                {
+                    sprite.transform.localScale = new Vector3(1f, 1f, 1f);
+
+                    rigidbodyComponent.AddForce(
+                        new Vector3(
+                            0,
+                            doubleJumpPower,
+                            0
+                        ),
+                        ForceMode.Impulse
+                    );
+
+                    trashCanCollider.enabled = true;
+                    trashCanRigidbody.useGravity = true;
+
+                    canMove = true;
+                    inTrash = false;
+                }
+            }
+        }
+    }
+
+    [YarnCommand("quad_hmmm")]
+    public void QuadHmmm()
+    {
+        StartCoroutine(FadeIn(hmmm, purrVolume, 2f));
     }
 }

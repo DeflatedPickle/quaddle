@@ -1,0 +1,31 @@
+﻿title: Start
+---
+when: hello!
+quad: hello?
+quad: ...
+
+->quad: who are you?
+	when: im when!
+	quad: why?
+	when: no, when
+	quad: oh
+->quad: when is it?
+	when: yes!
+	quad: what?
+	when: ...
+	when: hi!
+	when: im when!!!
+	quad: oh..
+
+when: so
+when: ...
+when: why were you in the trash?
+
+->quad: i have no idea
+	when: then how'd you get there?
+	quad: i have no idea
+	when: i see
+->quad: IT'S NOT MY FAULT!!!
+	quad: I DIDN'T WANT TO BE IN THE TRASH!!
+	when: *oh*
+===
